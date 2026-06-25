@@ -5,6 +5,16 @@ JoltikFix is a sleek, minimalist web-based text utility designed for speed and e
 
 ---
 
+## 🌐 Online Version (Official Release)
+
+Use **JoltikFix** directly in your browser.  
+
+[![JoltikFix Online](https://img.shields.io/badge/JoltikFix-Open_Online-black?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.neprash.ir/tools/JoltikFix-Text_Formatter_Tool.html)
+
+Hosted on **Neprash** and always updated to the latest stable version.
+
+---
+
 ## 🚀 Features
 
 - **Advanced Text Manipulation:** Effortlessly transform text with options like Uppercase, Lowercase, Capitalize, and Smart Sentence Case.

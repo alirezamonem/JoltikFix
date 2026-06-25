@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JoltikFix | Text Formatter Tool</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0e14;
+      --bg-gradient: linear-gradient(135deg, #0a0e14 0%, #111827 100%);
+      --surface: rgba(30, 41, 59, 0.7);
+      --surface-solid: #1e293b;
+      --surface-elevated: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f1f5f9;
+      --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      --surface: rgba(255, 255, 255, 0.8);
+      --surface-solid: #ffffff;
+      --surface-elevated: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(0, 0, 0, 0.05);
+      --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    * { box-sizing: border-box; transition: all 0.2s ease; }
+    body {
+      min-height: 100vh; margin: 0; padding: 20px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient); color: var(--text);
+      display: flex; justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container { width: 100%; max-width: 1100px; }
+    
+    .glass-card {
+      background: var(--surface); backdrop-filter: blur(12px);
+      border: 1px solid var(--border); border-radius: var(--radius-xl);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+
+    /* Header Area */
+    header {
+      padding: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 20px; border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 15px; }
+    .logo-box {
+      width: 45px; height: 45px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      display: grid; place-items: center; color: white; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+    .stats { display: flex; gap: 10px; }
+    .stat-badge {
+      background: var(--surface-elevated); padding: 8px 15px;
+      border-radius: 30px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--border);
+    }
+    .stat-badge span { color: var(--primary); margin-left: 5px; }
+
+    /* Main Grid */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1.5fr 1fr; } .full-row { grid-column: span 2; } }
+
+    /* Sections */
+    .section {
+      background: var(--surface-solid); padding: 20px;
+      border-radius: var(--radius-lg); border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 15px;
+    }
+    .section-header { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .section-header svg { width: 18px; height: 18px; color: var(--primary); }
+
+    /* Input Controls */
+    textarea {
+      width: 100%; min-height: 250px; padding: 15px;
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      border-radius: var(--radius-md); font-size: 1rem; line-height: 1.6; resize: vertical; outline: none;
+    }
+    textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+    
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn {
+      padding: 10px 16px; border-radius: 10px; border: none; cursor: pointer;
+      font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface-elevated); color: var(--text); border: 1px solid var(--border);
+    }
+    .btn:hover { transform: translateY(-2px); background: var(--border); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+    input, select {
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      padding: 10px; border-radius: 8px; outline: none; font-size: 0.9rem;
+    }
+
+    /* Generator Box Styles */
+    .output-box {
+      background: var(--bg); border: 1px dashed var(--border);
+      border-radius: var(--radius-md); padding: 15px; font-size: 0.9rem;
+      max-height: 150px; overflow-y: auto; white-space: pre-wrap;
+    }
+
+        /* Footer Styles */
+    footer {
+      width: 100%; max-width: 1100px;
+      padding: 30px; margin-top: 32px;
+      background: var(--surface); backdrop-filter: blur(10px);
+      border-radius: var(--radius-xl); border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .footer-link {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text); font-weight: 500; font-size: 0.9rem;
+      padding: 10px 20px; border-radius: 15px; background: var(--surface-elevated);
+      border: 1px solid var(--border);
+    }
+    .footer-link:hover { background: var(--primary); color: white; transform: scale(1.05); }
+    .footer-link svg { width: 20px; height: 20px; }
+
+    .footer-link svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      header { flex-direction: column; align-items: center; text-align: center; }
+      .toolbar { justify-content: center; }
+      .footer-links { flex-direction: column; width: 100%; }
+      .footer-link { width: 100%; justify-content: center; }
+      .btn { flex: 1 1 120px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="glass-card">
+    <header>
+      <div class="brand">
+        <div class="logo-box">
+          <!-- <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> -->
+          <svg
+   width="32px"
+   height="32px"
+   viewBox="0 0 53.97311 116.3725"
+   version="1.1"
+   id="svg1"
+   xml:space="preserve"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs1"><linearGradient
+       id="linearGradient4"><stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4" /><stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.04766964"
+         id="stop6" /><stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.38579783"
+         id="stop7" /><stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.55445731"
+         id="stop5" /><stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop8" /></linearGradient><linearGradient
+       xlink:href="#linearGradient4"
+       id="linearGradient12"
+       x1="69.129707"
+       y1="-137.72809"
+       x2="33.014645"
+       y2="-177.83792"
+       gradientUnits="userSpaceOnUse" /></defs><g
+     id="layer1"
+     transform="translate(-24.085618,215.96927)"><path
+       id="path10"
+       style="fill:url(#linearGradient12);stroke:none;stroke-opacity:1"
+       d="m 49.487419,-215.96925 c -1.102353,-0.003 -2.215467,1.18435 -6.144845,5.7211 -2.595946,2.99721 -4.816874,5.7023 -4.935099,6.01152 -0.406276,1.06265 0.04083,2.12788 1.473295,3.50935 0.763123,0.73595 4.6022,4.1195 8.531262,7.51943 3.929062,3.39992 9.346402,8.10231 12.038542,10.4495 2.69213,2.3472 5.073386,4.33652 5.291666,4.42092 1.46507,0.56666 2.300689,0.0337 5.371249,-3.42719 5.19111,-5.85094 6.738976,-7.75879 6.876066,-8.47596 0.30833,-1.61291 -0.182588,-2.13923 -9.336898,-10.01438 -4.87495,-4.19375 -10.794871,-9.32983 -13.155786,-11.41326 -2.360916,-2.08342 -4.622034,-3.91288 -5.0245,-4.0659 -0.368562,-0.14013 -0.676294,-0.23428 -0.984952,-0.23513 z m 14.651302,4.49224 c -0.517454,0.0164 -0.948771,0.3846 -1.597319,0.9896 -1.06361,0.99218 -1.063524,0.99243 2.854606,4.47725 2.15497,1.91665 3.997091,3.49422 4.093291,3.50572 0.0962,0.0115 0.483155,-0.3455 0.859895,-0.79323 0.47594,-0.56562 0.684713,-1.12331 0.684713,-1.82728 0,-0.93465 -0.169172,-1.16477 -2.182812,-2.96829 -2.7479,-2.46116 -3.849951,-3.41115 -4.712374,-3.38377 z m -17.916736,19.61637 c -0.0087,-2.2e-4 -0.01616,7.9e-4 -0.02222,0.003 -0.242032,0.0921 -9.880886,11.08127 -13.797607,15.73031 -5.1462,6.10841 -7.539328,11.22746 -8.177279,17.49195 -0.886713,8.70726 2.478098,17.51371 9.606132,25.14214 0.847044,0.90651 1.59055,1.60108 1.666565,1.55856 2.79e-4,-1.9e-4 0.0013,-8.2e-4 0.0016,-0.001 l 5.17e-4,-5.1e-4 c 0.06082,-0.0608 -0.258286,-0.70979 -0.709001,-1.44229 -1.954169,-3.17593 -3.398181,-7.94143 -3.623034,-11.95534 -0.293283,-5.23546 0.771618,-9.81106 3.509863,-15.08125 1.91995,-3.69526 3.084372,-5.21158 11.881962,-15.47245 4.074198,-4.75184 7.486646,-8.7814 7.583516,-8.95449 0.107713,-0.19247 -0.808253,-1.13624 -2.358512,-2.42982 -1.394166,-1.16332 -3.168391,-2.69112 -3.942395,-3.39514 -0.737723,-0.67101 -1.443577,-1.18922 -1.620056,-1.19373 z m 9.888285,8.82478 c -0.416505,3.7e-4 -0.730513,0.34898 -1.258838,0.93586 -2.266615,2.51782 -2.149762,2.02154 -1.560111,6.62957 0.451415,3.52773 1.603003,15.04654 1.603003,16.03417 0,0.27599 1.73662,0.34416 8.73125,0.34416 6.80812,0 8.731573,-0.0729 8.732283,-0.33073 0.0033,-1.17824 1.341741,-13.9404 2.013831,-19.20141 0.22904,-1.79314 0.368458,-3.3078 0.310058,-3.3662 -0.05838,-0.0584 -1.192903,1.06413 -2.521293,2.49442 -1.3284,1.43028 -2.827746,2.79613 -3.332096,3.03547 -0.50436,0.23933 -1.567163,0.43512 -2.361613,0.43512 -1.79551,0 -2.281227,-0.31325 -6.880717,-4.43901 -2.039027,-1.829 -2.867019,-2.57195 -3.475757,-2.57142 z m 7.397998,26.06043 c -9.113123,0 -9.113122,4e-5 -9.525,0.58808 -0.567578,0.81033 -0.515712,1.9539 0.117306,2.58692 0.508682,0.50866 0.881957,0.52917 9.642305,0.52917 9.11312,0 9.11312,-5e-5 9.525,-0.58808 0.56757,-0.81034 0.515705,-1.9539 -0.117305,-2.58692 -0.50869,-0.50866 -0.881966,-0.52917 -9.642306,-0.52917 z m 0.109554,5.95312 c -8.025619,0 -8.025315,1e-5 -8.388118,1.7198 -1.374468,6.51538 -3.17725,12.63723 -5.274614,17.91105 -1.177852,2.96171 -1.177834,2.96171 0.651123,5.68854 3.734491,5.56784 7.186961,12.12204 9.705351,18.42471 1.12003,2.80305 1.51317,4.39622 1.268664,4.87499 -0.467536,0.91548 -0.03299,2.02178 0.633888,2.480485 1.342099,0.923156 0.306791,0.124966 0.758646,-12.987295 0.326265,-9.4678 -0.290073,-13.27258 -0.501123,-13.35048 -0.1629,-0.0602 -0.624714,-0.43816 -1.026294,-0.83974 -0.58899,-0.58899 -0.730188,-0.96912 -0.730188,-1.96732 0,-1.0545 0.133097,-1.37074 0.899687,-2.13734 0.69851,-0.6985 1.118145,-0.89969 1.877405,-0.89969 1.89843,0 3.049657,1.18271 3.038057,3.12126 -0.0063,1.0489 -0.55405,1.92085 -1.51567,2.41329 -0.59531,0.30486 -0.595312,0.3049 -0.595312,13.65705 0,7.34368 -0.04411,13.31624 0.05569,13.31624 0.09976,0 0.58264,-0.222838 0.91944,-0.53925 0.62781,-0.58979 0.565605,-1.8121 0.347782,-2.20296 -0.285723,-0.5127 -0.261669,-1.22401 1.359091,-5.23844 2.72792,-6.75671 4.781248,-10.66458 9.025288,-17.17518 2.36507,-3.62816 2.364901,-3.62816 1.042831,-7.01146 -2.27775,-5.82891 -3.836382,-11.05384 -5.035352,-16.87701 -0.49029,-2.38125 -0.490666,-2.38125 -8.516276,-2.38125 z" /></g></svg>
+        </div>
+        <div> 
+          <h2 style="margin:0; font-size:1.2rem;">JoltikFix</h2>
+          <span style="font-size:0.75rem; color:var(--muted)">Text Formatter Tool - v2.5</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-badge">Words <span id="wordCount">0</span></div>
+        <div class="stat-badge">Chars <span id="charCount">0</span></div>
+        <button class="btn" id="themeBtn" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; justify-content: center;">🌓</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- MAIN EDITOR SECTION -->
+      <div class="section full-row">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Main Text Workspace
+        </div>
+        <textarea id="mainInput" placeholder="Enter or paste your content here..."></textarea>
+        
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="doPaste()">Paste</button>
+          <button class="btn btn-success" onclick="doCopyAll()">Copy All</button>
+          <button class="btn btn-danger" onclick="doClear()">Clear Full Box</button>
+        </div>
+
+        <div class="section-header" style="margin-top:10px">Text Case Controls</div>
+        <div class="toolbar">
+          <button class="btn" onclick="setCase('upper')">UPPERCASE ALL</button>
+          <button class="btn" onclick="setCase('lower')">lowercase all</button>
+          <button class="btn" onclick="setCase('capitalize')">Capitalize All</button>
+          <button class="btn" onclick="setCase('sentence')">Capitalize Sentences</button>
+        </div>
+      </div>
+
+      <!-- FIND & REPLACE -->
+      <div class="section">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Advanced Replace
+        </div>
+        <input type="text" id="findIn" placeholder="Find text...">
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="repIn" placeholder="Replace with..." style="flex:1">
+          <button class="btn btn-primary" onclick="findReplace()">Replace</button>
+        </div>
+        <div class="toolbar">
+          <button class="btn" onclick="presetReplace('-')">Space to '-'</button>
+          <button class="btn" onclick="presetReplace('_')">Space to '_'</button>
+          <button class="btn btn-danger" onclick="presetReplace('')">Remove All Spaces</button>
+          <button class="btn btn-warning" onclick="removeMultiSpace()">Remove Multiple Spaces</button>
+        </div>
+      </div>
+
+
+      <!-- CHAR REPEATER -->
+      <div class="section">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 12h10M12 7v10"/></svg>
+          Char / Icon Generator
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="cSym" placeholder="Character..." style="width: 120px;">
+          <input type="number" id="cNum" value="10" style="flex:1">
+          <button class="btn btn-primary" onclick="genRepeat()">Repeat</button>
+        </div>
+        <div id="rOut" class="output-box">...</div>
+        <div class="toolbar">
+          <button class="btn" style="flex:1" onclick="copyOut('rOut')">Copy</button>
+          <button class="btn" style="flex:1" onclick="insertToMain('rOut')">Insert</button>
+        </div>
+      </div>
+
+
+
+      <!-- LOREM GENERATOR -->
+      <div class="section">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M4 16h16M4 12h16M4 8h16M4 4h16"/></svg>
+          Lorem Ipsum Generator
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <select id="lLang">
+            <option value="en">English (Global)</option>
+            <option value="fa">Persian (پارسی)</option>
+          </select>
+          <select id="lType">
+            <option value="para">Paragraphs</option>
+            <option value="sent">Sentences</option>
+            <option value="word">Words</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="lCount" value="3" min="1" style="flex:1">
+          <button class="btn btn-primary" onclick="genLorem()">Generate</button>
+          <button class="btn btn-purple" onclick="genRandom()">🎲</button>
+        </div>
+        <div id="lOut" class="output-box" dir="ltr">...</div>
+        <div class="toolbar">
+          <button class="btn" style="flex:1" onclick="copyOut('lOut')">Copy</button>
+          <button class="btn" style="flex:1" onclick="insertToMain('lOut')">Insert</button>
+        </div>
+      </div>
+
+      <!-- WORD FREQUENCY -->
+      <div class="section">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          Word Frequency
+        </div>
+        <button class="btn btn-purple" onclick="calcFreq()">Analyze & Clean Frequency</button>
+        <div id="fOut" class="output-box" style="font-family: monospace;">No analysis yet.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<footer>
+  <div style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">Developed by Alireza Monem</div>
+  <div class="footer-links">
+    <a href="https://github.com/alirezamonem" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      GitHub
+    </a>
+
+    <!-- Personal Website -->
+    <!-- <a href="https://alirezamonem.ir/" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Personal Website
+    </a> -->
+
+    <a href="https://seeme.dev/members/alireza-monem-m1/activity/" target="_blank" class="footer-link">
+      <!-- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> -->
+       <svg
+   width="164.01776mm"
+   height="189.61621mm"
+   viewBox="0 0 164.01776 189.61621"
+   version="1.1"
+   id="svg1"
+   xml:space="preserve"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs1"><clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath26"><path
+         id="path27"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.264583"
+         d="m -209.94481,-948.57673 v 267.05348 H 0.57050781 v -267.05348 z m 54.31503,61.24226 c 1.52636,0.0493 1.70588,1.97432 -0.35243,3.02463 -0.82058,0.41871 -1.66779,0.78518 -2.50527,1.16891 -2.58556,1.18469 -3.78239,-1.42703 -1.19683,-2.61173 0.93157,-0.42683 1.86246,-0.85567 2.79363,-1.2826 0.48474,-0.22225 0.90867,-0.31059 1.2609,-0.29921 z m 0.54261,3.67625 c 0.71643,-3e-5 1.41621,0.71048 1.38596,2.13217 -0.0578,2.71867 -0.59383,5.40869 -1.15084,8.06204 -0.12951,0.54726 -0.25909,1.09503 -0.3886,1.64229 -0.65498,2.76763 -3.45221,2.10477 -2.7957,-0.66249 0.12423,-0.52361 0.2489,-1.04732 0.37311,-1.57096 0.51831,-2.45853 1.02252,-4.95239 1.08882,-7.47088 0.0375,-1.42153 0.77081,-2.13212 1.48725,-2.13217 z" /></clipPath></defs><g
+     id="layer2"
+     transform="translate(190.13088,946.03169)"
+     style="fill:#ffffff;fill-opacity:1"><path
+       id="path5-6"
+       style="fill:#ffffff;fill-opacity:1"
+       d="m -240.22484,-914.41543 c -0.0708,0 -0.12974,1.94486 -0.13074,4.3217 -0.003,8.06625 -3.71872,15.62673 -10.1756,20.70572 -3.56986,2.80805 -32.69579,22.13504 -35.04851,23.25698 -1.63732,0.78078 0.24585,1.90502 -29.0897,-17.36845 -16.11041,-10.58458 -20.92521,-18.4835 -18.26141,-29.95735 0.48492,-2.08869 -10.04476,3.76054 -12.0711,6.70554 -3.98036,5.78487 -0.60309,16.91164 7.43417,24.49359 2.36914,2.23493 4.42114,3.65144 18.33738,12.65711 3.73757,2.4187 11.11945,7.24184 16.40417,10.71769 18.16129,11.945 12.01671,13.56394 53.61791,-14.12833 l 9.08369,-6.04666 v 25.9302 c 0,25.93001 0,25.92951 0.79375,25.41757 0.43656,-0.28157 2.69875,-1.63519 5.02708,-3.00809 4.35996,-2.57085 5.96648,-3.9468 7.10447,-6.08593 1.31719,-2.47599 0.95918,-66.30523 -0.3855,-68.73276 -1.36619,-2.46635 -10.49486,-8.87853 -12.64006,-8.87853 z m -96.82044,39.99343 c 0.10187,1.4939 0.19698,3.61942 0.0253,0.0739 -0.009,-0.0247 -0.0169,-0.0496 -0.0253,-0.0739 z m 2.97346,1.50378 c 0.0983,0.21238 0.20037,0.4307 0.30748,0.65526 0.11161,0.23402 -0.11356,-0.26762 -0.28733,-0.6413 z m 11.28665,5.66632 c 0.43621,0.29419 0.86228,0.61294 0.67128,0.47801 -0.2226,-0.15726 -0.4438,-0.32398 -0.67128,-0.47801 z m 3.55275,26.36997 v 5.2e-4 c 0.0831,0.0283 0.16564,0.0573 0.24805,0.0868 0.0235,-0.027 0.0478,-0.0546 0.0718,-0.0832 -0.10651,-8.7e-4 -0.21344,-0.002 -0.31988,-0.004 z"
+       transform="translate(178.40855,20.397757)" /><path
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.287867"
+       d="m -110.70579,-756.78595 c -2.32404,-0.59359 -3.56467,-1.20002 -9.14519,-4.47027 -10.40449,-6.09716 -57.58388,-34.22025 -60.51781,-36.07395 -8.86288,-5.59975 -9.08279,-6.0026 -9.49059,-17.38553 -0.56764,-15.84484 -0.17988,-70.72659 0.56062,-79.34756 0.40125,-4.67141 1.87537,-6.78299 7.15608,-10.25065 4.03298,-2.64835 48.92873,-29.22661 63.78377,-37.75998 8.26501,-4.74776 10.45423,-5.00087 16.84648,-1.94755 5.55472,2.65327 68.36112,39.65424 71.256807,41.97935 2.566244,2.06057 3.423467,5.12781 3.861652,13.81739 0.367533,7.28855 0.377275,67.94418 0.01193,74.23467 -0.464777,8.00232 -1.406255,11.2889 -3.82756,13.36149 -0.661916,0.56658 -2.69022,1.88227 -4.507346,2.92372 -1.817124,1.04145 -13.12926,7.73869 -25.138081,14.88271 -35.91007,21.36285 -40.166302,23.81215 -44.099382,25.37746 -2.88598,1.14858 -4.29513,1.28606 -6.75137,0.6587 z m 4.86093,-15.41454 c 2.18005,-0.66133 6.198347,-2.8923 18.98434,-10.54024 14.785755,-8.84406 34.023308,-20.21247 38.327343,-22.64949 6.742028,-3.81746 7.989657,-5.82819 8.667385,-13.96879 0.443568,-5.32796 0.194159,-65.54149 -0.283623,-68.4726 -0.449525,-2.75778 -1.421831,-4.894 -2.648844,-5.81962 -0.532625,-0.40179 -2.261222,-1.4719 -3.84133,-2.37802 -1.58011,-0.90609 -13.99114,-8.24288 -27.580068,-16.30397 -13.588929,-8.06111 -25.870673,-15.2546 -27.292773,-15.98557 -4.60014,-2.3645 -6.91863,-2.79199 -9.76794,-1.80104 -0.79006,0.27477 -14.10606,8.00767 -29.59111,17.18421 -15.48506,9.17654 -29.07474,17.2172 -30.19928,17.86808 -2.4987,1.44629 -3.68398,2.74701 -4.25483,4.66929 -0.95026,3.19984 -1.06585,8.17766 -0.95695,41.20747 0.0985,29.88038 0.14765,32.63445 0.61736,34.60544 1.03146,4.32829 2.46034,5.94889 7.97415,9.04415 3.55507,1.99569 19.22027,11.24516 38.59198,22.78647 19.12211,11.39264 19.67029,11.64143 23.25419,10.55423 z"
+       id="path14" /><path
+       id="path54"
+       style="fill:#ffffff;fill-opacity:1"
+       d="m -167.82944,-864.73443 -0.0904,22.84357 c -0.10167,25.58107 -0.12767,25.26278 2.29081,27.93421 0.75491,0.83387 3.45849,2.75049 6.26629,4.44211 2.71639,1.63653 5.03927,2.98403 5.16144,2.99413 0.12214,0.0101 0.18601,-0.81536 0.14211,-1.834 -0.0439,-1.01865 -0.10404,-11.16551 -0.13384,-22.54849 l -0.0543,-20.69641 -2.7342,-1.91668 c -3.26181,-2.28711 -7.07376,-6.00204 -9.26042,-9.02426 z" /><path
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.287867"
+       d="m -134.63048,-795.2987 c -6.44004,-3.91361 -8.21542,-5.54405 -8.78642,-8.0691 -0.33951,-1.5014 -0.64058,-33.25291 -0.35851,-37.80972 l 0.22746,-3.67491 2.87293,1.95263 c 6.58368,4.47466 9.00925,6.63852 9.66401,8.62137 0.2658,0.80491 0.38476,5.6484 0.46064,18.75366 0.0563,9.71767 0.0636,18.79235 0.0164,20.16593 l -0.0858,2.49743 z"
+       id="path18" /><path
+       id="path5-0"
+       clip-path="url(#clipPath26)"
+       style="fill:#ffffff;fill-opacity:1"
+       transform="translate(-3.402102,2.2529209)"
+       d="m -104.32525,-921.92023 c -3.55788,-0.13213 -7.45766,2.13162 -16.63619,7.33547 -15.9848,9.06273 -18.3441,11.69669 -18.3441,20.47782 0,9.71542 1.77992,11.318 27.51666,24.77523 6.26661,3.27668 13.474757,7.77623 14.783079,9.22786 0.87254,0.96812 0.27702,1.23246 6.19032,-2.74764 7.056824,-4.74978 8.483203,-5.77136 8.483203,-6.07353 0,-1.10205 -17.212312,-11.38559 -33.231042,-19.85408 -8.04625,-4.25374 -7.57,-6.90997 2.25567,-12.58735 7.83135,-4.52505 8.88991,-4.58057 15.472442,-0.80718 16.684549,9.5643 18.278914,10.30281 21.340816,9.88312 3.884002,-0.53236 5.895447,-2.58663 6.089034,-6.21823 0.244871,-4.59365 -0.38881,-5.2584 -10.810709,-11.34349 -4.397373,-2.56752 -10.29414,-6.0177 -13.10411,-7.66724 -4.677264,-2.74571 -7.237823,-4.29799 -10.005073,-4.40076 z m 24.886335,58.56128 v 5.2e-4 c -0.08521,0.0499 -0.160736,0.0969 -0.223242,0.14056 -0.02565,0.0179 -0.03952,0.0293 -0.04341,0.0336 l -5.17e-4,5.2e-4 -5.17e-4,5.1e-4 v 5.2e-4 5.2e-4 h 5.17e-4 c 0.01205,-9.3e-4 0.138402,-0.0734 0.288355,-0.16485 -0.007,-0.004 -0.01427,-0.007 -0.02119,-0.0119 z" /><path
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.287867"
+       d="m -85.656351,-810.552 c 0.003,-22.33536 0.2136,-24.4601 2.66968,-26.90077 1.00494,-0.99865 10.24919,-7.37582 10.69186,-7.37582 0.28197,0 0.13369,35.98381 -0.15954,38.72397 -0.22191,2.07346 -0.51732,3.24212 -1.15046,4.55141 -1.03114,2.13228 -2.24687,3.11801 -7.74433,6.27923 -2.13315,1.22663 -3.97542,2.28626 -4.09393,2.35473 -0.1185,0.0685 -0.21449,-7.86627 -0.21328,-17.63275 z"
+       id="path19" /></g></svg>
+      See Me Developer
+    </a>
+
+
+    <!-- Neprash Site -->
+    <!-- <a href="https://neprash.ir/" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7M4 21V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v17"/></svg>
+      Neprash Co
+    </a>
+     -->
+  </div>
+  <div style="font-size: 0.75rem; color: var(--muted);"> © <span id="year"></span> | All rights reserved</div>
+</footer>
+
+<script>
+  const main = document.getElementById('mainInput');
+  
+  // Stats
+  main.addEventListener('input', () => {
+    document.getElementById('charCount').textContent = main.value.length;
+    document.getElementById('wordCount').textContent = main.value.trim() ? main.value.trim().split(/\s+/).length : 0;
+  });
+
+  // Theme Toggle
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+  });
+
+  // به‌روزرسانی خودکار سال در فوتر
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // apitalize Sentences
+  function capitalizeSentences(text) {
+      text = text.toLowerCase();
+      return text.replace(/(^\s*\w|[.!?]\s+\w|[\r\n]+\s*\w)/g, function(match) {
+          return match.toUpperCase();
+      });
+  }
+
+  // Formatting
+  function setCase(m) {
+    let t = main.value;
+    if(m === 'upper') t = t.toUpperCase();
+    if(m === 'lower') t = t.toLowerCase();
+    if(m === 'capitalize') t = t.replace(/\b\w/g, c => c.toUpperCase());
+    // if(m === 'sentence') t = t.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, c => c.toUpperCase());
+    if(m === 'sentence') t = capitalizeSentences(t);
+    
+    main.value = t;
+    main.dispatchEvent(new Event('input'));
+  }
+
+  // Basic Actions
+  function doClear() { main.value = ''; main.dispatchEvent(new Event('input')); }
+  
+  
+  // async function doPaste() { main.value += await navigator.clipboard.readText(); main.dispatchEvent(new Event('input')); }
+  // Smart Paste Function
+  async function doPaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        main.value += text;
+        main.dispatchEvent(new Event('input'));
+      }
+    } catch (err) {
+      // Fallback for browsers with strict security
+      alert("Please use Ctrl+V (or Cmd+V) to paste directly into the box.");
+      main.focus();
+    }
+  }
+
+  function doCopyAll() { navigator.clipboard.writeText(main.value); }
+
+  // Search/Replace
+  function findReplace() {
+    const f = document.getElementById('findIn').value;
+    const r = document.getElementById('repIn').value;
+    main.value = main.value.split(f).join(r);
+    main.dispatchEvent(new Event('input'));
+  }
+
+  function presetReplace(val) {
+    main.value = main.value.replace(/\s/g, val);
+    main.dispatchEvent(new Event('input'));
+  }
+
+  function removeMultiSpace() {
+    main.value = main.value.replace(/\s+/g, ' ').trim();
+    main.dispatchEvent(new Event('input'));
+  }
+
+  // Lorem Ipsum Data
+  const lData = {
+    en: {
+      p: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.","Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.","Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."],
+      w: "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor".split(' ')
+    },
+    fa: {
+      p: ["لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.","چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز است.","طرح‌نما یا لورم ایپسوم به متنی آزمایشی و بی‌معنی در صنعت چاپ، صفحه‌آرایی و طراحی گرافیک گفته می‌شود."],
+      w: "لورم ایپسوم متن ساختگی تولید سادگی نامفهوم صنعت چاپ طراحان گرافیک".split(' ')
+    }
+  };
+
+  function genLorem() {
+    const lang = document.getElementById('lLang').value;
+    const type = document.getElementById('lType').value;
+    const count = parseInt(document.getElementById('lCount').value);
+    const out = document.getElementById('lOut');
+    out.dir = lang === 'fa' ? 'rtl' : 'ltr';
+    let res = "";
+
+    if(type === 'para') for(let i=0; i<count; i++) res += lData[lang].p[i % 3] + "\n\n";
+    else if(type === 'sent') for(let i=0; i<count; i++) res += lData[lang].p[0].split('.')[i%2] + ". ";
+    else for(let i=0; i<count; i++) res += lData[lang].w[i % lData[lang].w.length] + " ";
+
+    out.textContent = res.trim();
+  }
+
+  function genRandom() {
+    document.getElementById('lLang').value = Math.random() > 0.5 ? 'en' : 'fa';
+    document.getElementById('lType').value = ['para','sent','word'][Math.floor(Math.random()*3)];
+    document.getElementById('lCount').value = Math.floor(Math.random()*5)+1;
+    genLorem();
+  }
+
+  // Utils
+  function copyOut(id) { navigator.clipboard.writeText(document.getElementById(id).textContent); }
+  function insertToMain(id) { main.value += "\n" + document.getElementById(id).textContent; main.dispatchEvent(new Event('input')); }
+  
+  function genRepeat() {
+    const s = document.getElementById('cSym').value || '*';
+    const n = document.getElementById('cNum').value;
+    document.getElementById('rOut').textContent = s.repeat(n);
+  }
+
+  function calcFreq() {
+    const words = main.value.toLowerCase().match(/\b\w+\b/g);
+    if(!words) return;
+    const f = {};
+    words.forEach(w => f[w] = (f[w] || 0) + 1);
+    let report = Object.entries(f).sort((a,b) => b[1] - a[1]).map(e => `${e[0]}: ${e[1]}`).join('\n');
+    document.getElementById('fOut').textContent = report;
+    // Remove duplicates from main
+    main.value = [...new Set(words)].join(' ');
+    main.dispatchEvent(new Event('input'));
+  }
+</script>
+
+</body>
+</html>
